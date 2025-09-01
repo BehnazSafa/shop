@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>فروشگاه پارچه و پرده</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>فروشگاه - پرده آهنربایی، دستمال آشپزخانه و دمکنی</h1>
+  </header>
+  <main>
+    <section>
+      <h2>محاسبه قیمت پرده سفارشی</h2>
+      <form id="quote-form">
+        <label>عرض (سانتی‌متر): <input type="number" id="width" required min="1" step="0.1"></label>
+        <label>ارتفاع (سانتی‌متر): <input type="number" id="height" required min="1" step="0.1"></label>
+        <label>جنس:
+          <select id="material">
+            <option value="mesh">تور</option>
+            <option value="pvc">طلق (PVC)</option>
+          </select>
+        </label>
+        <label>فاصله آهنربا (اختیاری - سانتی‌متر): <input type="number" id="spacing" min="1" step="0.1" placeholder="مثلا 10"></label>
+        <button type="submit">محاسبه</button>
+      </form>
+      <pre id="result"></pre>
+    </section>
+
+    <section>
+      <h2>پرده‌های آماده (سایز استاندارد)</h2>
+      <button id="load-curtains">نمایش</button>
+      <ul id="curtain-list"></ul>
+    </section>
+  </main>
+
+  <script>
+  document.getElementById('quote-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      width_cm: parseFloat(document.getElementById('width').value),
+      height_cm: parseFloat(document.getElementById('height').value),
+      material: document.getElementById('material').value,
+      magnet_spacing_cm: document.getElementById('spacing').value ? parseFloat(document.getElementById('spacing').value) : null
+    };
+    const r = await fetch('/curtains/quote', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+  });
+
+  document.getElementById('load-curtains').addEventListener('click', async () => {
+    const r = await fetch('/products/curtains/standard');
+    const data = await r.json();
+    const ul = document.getElementById('curtain-list');
+    ul.innerHTML = '';
+    data.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item.name + ' — ' + item.price + ' AZN';
+      ul.appendChild(li);
+    });
+  });
+  </script>
+</body>
+</html>
